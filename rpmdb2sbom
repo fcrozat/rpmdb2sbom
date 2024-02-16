@@ -9,7 +9,7 @@ cat << EOF > db.json
    "serialNumber" : "urn:uuid:c7dbc0d8-bcba-5946-aec2-0be72a6f5f3d",
    "version" : 1,
    "metadata" : {
-      "timestamp" : "2024-02-14T09:35:42Z",
+      "timestamp" : "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
       "tools" : [
          {
             "name" : "transactional_update_generate_sbom",
