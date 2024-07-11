@@ -101,8 +101,14 @@ print_red "DEBUG: Deploying SBOM based install to $WORKSNAP"
 
 PACKAGES=$(jq -r '.components[] | select((.type| contains("library")) and (.name | contains ("gpg-pubkey") | not) ) | .name + "-" + .version' $1)
 
-ZYPP_SINGLE_RPMTRANS=1 zypper --installroot /.snapshots/$WORKSNAP/snapshot \
-	--gpg-auto-import-keys in $PACKAGES
+# Copy SUSEConnect registration
+mkdir -p /.snapshots/$WORKSNAP/snapshot/etc/zypp/{credentials.d,services.d}
+
+cp /etc/SUSEConnect /.snapshots/$WORKSNAP/snapshot/etc/
+cp /etc/zypp/credentials.d/* /.snapshots/$WORKSNAP/snapshot/etc/zypp/credentials.d/
+cp /etc/zypp/services.d/* /.snapshots/$WORKSNAP/snapshot/etc/zypp/services.d
+zypper --gpg-auto-import-keys --root /.snapshots/$WORKSNAP/snapshot ref -s -f
+ZYPP_SINGLE_RPMTRANS=1 zypper --root /.snapshots/$WORKSNAP/snapshot in $PACKAGES
 
 # Grab current fstab, except for last overlay mount
 fstab_content="$(cat /etc/fstab | head -n -1)"
@@ -117,10 +123,6 @@ cat /.snapshots/$WORKSNAP/snapshot/etc/fstab.bak >> /.snapshots/$WORKSNAP/snapsh
 systemctl restart snapperd
 
 cp -r /boot/grub2/* /.snapshots/$WORKSNAP/snapshot/boot/grub2/
-
-# Copy SUSEConnect registration
-cp /etc/SUSEConnect /.snapshots/$WORKSNAP/snapshot/etc/
-cp /etc/zypp/credentials.d/* /.snapshots/$WORKSNAP/snapshot/etc/zypp/credentials.d/
 
 
 # Now we set up the boot correctly, tukit call enables us to launch commands in
