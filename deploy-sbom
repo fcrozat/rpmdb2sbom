@@ -110,6 +110,9 @@ cp /etc/zypp/services.d/* /.snapshots/$WORKSNAP/snapshot/etc/zypp/services.d
 zypper --gpg-auto-import-keys --root /.snapshots/$WORKSNAP/snapshot ref -s -f
 ZYPP_SINGLE_RPMTRANS=1 zypper --root /.snapshots/$WORKSNAP/snapshot in $PACKAGES
 
+# drop var/lib/machines btrfs subvol, it should be created during package install
+btrfs subvol delete /.snapshots/$WORKSNAP/snapshot/var/lib/machines || :
+
 # Grab current fstab, except for last overlay mount
 fstab_content="$(cat /etc/fstab | head -n -1)"
 
